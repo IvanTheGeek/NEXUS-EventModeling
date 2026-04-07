@@ -286,6 +286,56 @@ testCase "label" <| fun () ->
 
 ---
 
+## Validation — Positive Match Only
+
+Define what IS valid. Reject everything that does not match. Never enumerate what is invalid.
+
+A denylist is always incomplete — forbidding `$` and `%` still allows `^`, `~`, zero-width spaces, and anything else not yet imagined. An allowlist is complete by definition: if it is not in the valid set, it is rejected.
+
+**`String.forall` — character-level allowlist**
+```fsharp
+// Bad — denylist; always incomplete
+let isValid (s: string) = not (s.Contains("$")) && not (s.Contains("%"))
+
+// Good — allowlist; complete by definition
+let isValid (s: string) =
+    s.Length > 0 &&
+    s |> String.forall (fun c -> Char.IsLetterOrDigit c || c = '-' || c = '_')
+```
+
+**Regex — anchored whitelist pattern**
+```fsharp
+open System.Text.RegularExpressions
+
+// ^ and $ anchor to the full string — without them, [a-z]+ matches a substring of "abc123"
+let validPattern = Regex(@"^[a-zA-Z0-9\-_]+$")
+
+let isValid (s: string) = validPattern.IsMatch(s)
+```
+
+Always anchor regex patterns with `^` and `$`. An unanchored pattern tests for a matching *substring*, not a matching *input*.
+
+**Smart constructor — positive validation at the boundary**
+```fsharp
+type ValidName = private ValidName of string
+
+module ValidName =
+    let create (s: string) =
+        if s.Length > 0 && s |> String.forall (fun c -> Char.IsLetterOrDigit c || c = '-' || c = '_')
+        then Ok (ValidName s)
+        else Error $"Name must match [a-zA-Z0-9\\-_]+ — got: '{s}'"
+
+    let value (ValidName s) = s
+```
+
+The error message states what IS valid, not what was rejected — same positive framing.
+
+**Validate once, at the boundary only**
+
+Validate at system entry points: user input, API requests, file imports. Inside the domain, values are already valid by construction (see: Parse, don't validate). Do not re-validate inside domain functions.
+
+---
+
 ## Errors Encountered and Solutions
 
 <!-- Add entries here as they occur. Format:

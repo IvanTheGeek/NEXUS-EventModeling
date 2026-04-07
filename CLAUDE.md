@@ -57,6 +57,7 @@ EventModeling.Tests/     Framework validation tests — abstract types, no domai
 - Use discriminated unions instead of strings/bools/ints for domain concepts
 - Total functions: if a function can fail, encode it in the return type (`Result`, `option`) — never throw for domain failures
 - Parse, don't validate: validate at the boundary; inside the domain everything is already valid by construction
+- Validate with positive match only — define the valid set (`String.forall`, anchored regex `^...$`, smart constructors); never denylist
 - Use records for all data types — immutable by default
 - Compose functions; F# has no data inheritance
 
