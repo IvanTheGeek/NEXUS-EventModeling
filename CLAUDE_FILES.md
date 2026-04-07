@@ -153,12 +153,25 @@ When a `CLAUDE.md` contains a condensed summary of a larger reference document (
 
 ---
 
+## Reference Documents and Where They Live
+
+Two reference documents exist outside the `CLAUDE.md` hierarchy but are linked to it via sync contracts:
+
+| Document | Location | Scope | Condensed in |
+|---|---|---|---|
+| `FSHARP.md` | `/home/ivan/nexus/` | All NEXUS F# projects | `nexus/CLAUDE.md` `## F#` |
+| `EVENT_MODELING.md` | `/home/ivan/nexus/NEXUS-EventModeling/` | All NEXUS projects (methodology) | `nexus/CLAUDE.md` `## Event Modeling` |
+
+These files are **not** CLAUDE.md files and do not auto-load. They are detailed references — read them when the condensed section in `CLAUDE.md` isn't enough. When either is updated, update the corresponding condensed section in `nexus/CLAUDE.md` per the sync contract at the top of each file.
+
 ## Current Setup in This Repo
 
 ```
-~/.claude/CLAUDE.md                          — personal global (style, behavior)
-/home/ivan/nexus/CLAUDE.md                   — nexus workspace context
-/home/ivan/nexus/NEXUS-EventModeling/CLAUDE.md  — this project (auto-loads all three)
+~/.claude/CLAUDE.md                             — personal global (style, behavior, validation)
+/home/ivan/nexus/CLAUDE.md                      — workspace: Event Modeling methodology + F# reference
+/home/ivan/nexus/FSHARP.md                      — full F# notes (condensed into nexus/CLAUDE.md)
+/home/ivan/nexus/NEXUS-EventModeling/CLAUDE.md  — library-specific conventions only
+/home/ivan/nexus/NEXUS-EventModeling/EVENT_MODELING.md  — full methodology (condensed into nexus/CLAUDE.md)
 ```
 
-`CLAUDE.md` in this project contains condensed reference sections for both `EVENT_MODELING.md` and `FSHARP.md`, kept in sync via explicit sync contracts at the top of each file.
+The workspace `CLAUDE.md` carries the condensed Event Modeling and F# sections that apply to all NEXUS projects. The project `CLAUDE.md` carries only what is specific to this library's implementation.

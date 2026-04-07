@@ -1,4 +1,4 @@
-> **Sync contract**: A condensed version of this document lives in `CLAUDE.md` under `## Event Modeling`. When this file is updated, update that section too.
+> **Sync contract**: A condensed version of this document lives in the workspace `CLAUDE.md` (one level up) under `## Event Modeling`. When this file is updated, update that section too.
 
 # Event Modeling
 
