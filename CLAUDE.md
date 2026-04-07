@@ -8,7 +8,7 @@ This is the NEXUS ecosystem-wide base library for Event Modeling in F#.
 
 Source of truth for:
 - The `EventModeling` core library (Actor, Command, Event, View, Slice, Path, Grouping types)
-- The `EventModeling.Testing` utility library (GWT test adapters, grouping test runner)
+- The `EventModeling.Testing` library — GWT adapters, grouping runner, Hedgehog generators, full testing stack
 
 ## Stack
 
@@ -20,7 +20,7 @@ Source of truth for:
 
 ```
 EventModeling/           Core library — domain types only
-EventModeling.Testing/   Test utility library — GWT adapters + grouping runner
+EventModeling.Testing/   Test utility library — GWT adapters, grouping runner, Hedgehog generators
 EventModeling.Tests/     Framework validation tests — abstract types, no domain
 ```
 
@@ -79,3 +79,13 @@ EventModeling.Tests/     Framework validation tests — abstract types, no domai
 - `testCase "label" <| fun () -> ...` — `<|` avoids nested parens, idiomatic
 - `testList "name" [...]` — groups tests; mirrors the Grouping hierarchy
 - `runTestsWithCLIArgs [] args allTests` — standard entry point in `Program.fs`
+
+**Hedgehog (property-based)**
+- `property { let! x = gen; return bool }` — property CE; `false` triggers shrinking and counterexample
+- `Property.check prop` — runs property inside a `testCase`; throws on counterexample
+- `Gen.int (Range.linear min max)`, `Gen.string (Range.linear min max) Gen.alphaNum` — common generators
+- Generators for core EventModeling types live in `EventModeling.Testing.Generators`
+
+**CsCheck (property-based complement)**
+- Use where Hedgehog falls short: shrinking complex types, regression file replay, specific .NET type generators
+- `Gen.Int.[min, max].Sample(fun n -> if bad then failtest "...")` — basic F# usage

@@ -206,6 +206,86 @@ The entry point for an Expecto test executable. Reads standard Expecto CLI argum
 
 ---
 
+## Property-Based Testing
+
+### Hedgehog
+
+Hedgehog is the primary property-based testing tool. It generates random inputs, shrinks failing cases to the minimal counterexample, and integrates cleanly with Expecto via `testCase`.
+
+**Core pattern**
+```fsharp
+testCase "label" <| fun () ->
+    Property.check <| property {
+        let! x = Gen.int (Range.linear 0 100)
+        return x >= 0
+    }
+```
+
+`property { }` is a computation expression. Bind generators with `let!`. The final `return` takes a `bool` — `false` triggers shrinking and failure. `Property.check` throws if a counterexample is found, which is what Expecto's `testCase` needs.
+
+**Common generators**
+```fsharp
+Gen.int    (Range.linear 0 100)             // int in [0, 100]
+Gen.string (Range.linear 1 20) Gen.alphaNum // non-empty alphanumeric string
+Gen.bool                                    // true or false
+Gen.list   (Range.linear 0 10) itemGen      // list of 0–10 items
+Gen.choice [ gen1; gen2; gen3 ]             // randomly picks one generator
+Gen.constant x                              // always produces x
+Gen.map    f gen                            // transform output
+gen { let! x = gen1; let! y = gen2; return ... }  // compose generators
+```
+
+**Generators for EventModeling types**
+
+`EventModeling.Testing.Generators` provides ready-made generators for `Actor`, `ActorKind`, `Event<'T>`, `Command<'T>`, and `View<'T>`. Use these in consuming project tests rather than rewriting them.
+
+```fsharp
+open EventModeling.Testing.Generators
+
+property {
+    let! cmd = command actor (Gen.int (Range.linear 0 100))
+    return cmd.IssuedBy.Name <> ""
+}
+```
+
+**When to use Hedgehog**
+- Invariants that must hold for all inputs (e.g. "event name is never empty")
+- Roundtrip properties (serialize then deserialize yields same value)
+- Domain laws (commutativity, associativity, idempotence)
+- Handler correctness over a range of inputs rather than one GWT example
+
+---
+
+### CsCheck
+
+CsCheck is a .NET property-based testing library used where Hedgehog falls short. Its strengths are:
+
+- **Regression file support** — persists the minimal failing example to disk; reruns it first on subsequent runs, catching regressions immediately
+- **Shrinking complex .NET types** — strong shrinkers for collections, strings, and types that Hedgehog's shrinking handles less well
+- **Specific .NET type generators** — built-in generators for `DateTime`, `Guid`, `Uri`, collections, etc.
+
+**F# usage**
+
+CsCheck is a C# library; its API is usable from F# but less idiomatic. Access ranged generators via the C# indexer syntax:
+
+```fsharp
+open CsCheck
+
+testCase "label" <| fun () ->
+    Gen.Int.[0, 100].Sample(fun n ->
+        if n < 0 then failtest $"Expected non-negative, got {n}"
+    )
+```
+
+`Gen.Int.[min, max]` uses F#'s `.[idx]` syntax to call the C# indexer. `Sample` takes an `Action<T>` — the F# lambda is coerced automatically. Throw (or call `failtest`) to signal a failing case.
+
+**When to use CsCheck over Hedgehog**
+- When a failing Hedgehog case doesn't shrink to a readable minimal example
+- When you need a generator for a complex .NET type that Hedgehog doesn't cover
+- When regression replay (the persisted seed file) is important for CI stability
+
+---
+
 ## Errors Encountered and Solutions
 
 <!-- Add entries here as they occur. Format:

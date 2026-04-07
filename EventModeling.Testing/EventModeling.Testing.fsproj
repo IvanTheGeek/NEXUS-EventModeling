@@ -9,9 +9,12 @@
   <ItemGroup>
     <Compile Include="Assert.fs" />
     <Compile Include="GroupingRunner.fs" />
+    <Compile Include="Generators.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../EventModeling/EventModeling.fsproj" />
     <PackageReference Include="Expecto" Version="10.*" />
+    <PackageReference Include="Hedgehog" Version="0.*" />
+    <PackageReference Include="CsCheck" Version="*" />
   </ItemGroup>
 </Project>

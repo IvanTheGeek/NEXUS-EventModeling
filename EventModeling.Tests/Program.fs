@@ -2,7 +2,9 @@ module EventModeling.Tests.Program
 
 open Expecto
 open EventModeling.Tests.Tests
+open EventModeling.Tests.PropertyTests
 
 [<EntryPoint>]
 let main args =
-    runTestsWithCLIArgs [] args allTests
+    let all = testList "EventModeling" [ allTests; allPropertyTests ]
+    runTestsWithCLIArgs [] args all
